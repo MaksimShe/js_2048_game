@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-expressions */
+/* eslint-disable no-console */
 /* eslint-disable function-paren-newline */
 /* eslint-disable prettier/prettier */
 /* eslint-disable max-len */
@@ -26,12 +28,27 @@ export default class Game {
    *  [0, 0, 0, 0]]
    */
   constructor(initialState) {
+
+    let initialStateValid = true;
+
     if (initialState) {
-      this.gameTable = initialState.map((row) => [...row]);
+
+      for (const row of initialState) {
+        row.map(num => {
+          if (this.isPowerOfTwo(num) === false) {
+            console.error('All numbers in initialState must be power of two or zero');
+            initialStateValid = false;
+          }
+        });
+      }
+
+      if (initialStateValid) {
+        this.gameTable = initialState.map((row) => [...row]);
+      } else {
+        this.createEmptyTable();
+      }
     } else {
-      this.gameTable = Array.from({ length: TABLE_SIZE }, () =>
-        Array(TABLE_SIZE).fill(0),
-      );
+      this.createEmptyTable();
     }
   }
 
@@ -334,6 +351,16 @@ export default class Game {
         cells[j].classList.add('transition-effect');
       });
     });
+  }
+
+  isPowerOfTwo(n) {
+    return n > 0 && (n & (n - 1)) === 0 || n === 0;
+  }
+
+  createEmptyTable() {
+    this.gameTable = Array.from({ length: TABLE_SIZE }, () =>
+      Array(TABLE_SIZE).fill(0),
+    );
   }
 
 }

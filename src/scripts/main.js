@@ -10,7 +10,7 @@ const arrows = document.querySelectorAll('.arrow');
 // const game = new Game();
 const game = new Game([
   [2, 4, 4, 8],
-  [0, 16, 0, 64],
+  [0, 16, 3, 64],
   [64, 128, 0, 256],
   [512, 0, 1024, 1024],
 ]);
