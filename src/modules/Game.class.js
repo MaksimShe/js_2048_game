@@ -36,6 +36,8 @@ export default class Game {
   }
 
   createCell() {
+    this.updateScore();
+
     const emptyCels = [];
 
     for (let i = 0; i < TABLE_SIZE; i++) {
@@ -43,6 +45,8 @@ export default class Game {
         if (this.gameTable[i][j] === 0) {
           emptyCels.push({ row: i, cell: j });
         } else if (this.gameTable[i][j] === 2048) {
+          this.render();
+          this.addScore(2048);
           this.gameWin();
 
           return;
@@ -56,22 +60,118 @@ export default class Game {
       return;
     }
 
-    const randomNum = Math.floor(Math.random() * emptyCels.length);
+    let numberToAdd = 2;
 
-    this.gameTable[emptyCels[randomNum].row][emptyCels[randomNum].cell] = 2;
+    const randomNum = Math.floor(Math.random() * emptyCels.length);
+    const randomValue = Math.floor(Math.random() * 10);
+
+    if (randomValue === 9) {
+      numberToAdd = 4;
+    }
+
+    this.gameTable[emptyCels[randomNum].row][emptyCels[randomNum].cell] = numberToAdd;
     this.render();
   }
 
   moveLeft() {
+    for (let i = 0; i < TABLE_SIZE; i++) {
+      const row = this.gameTable[i].filter((n) => n !== 0);
+
+      for (let k = 0; k < row.length - 1; k++) {
+        if (row[k] === row[k + 1]) {
+          row[k] *= 2;
+          this.addScore(row[k]);
+          row.splice(k + 1, 1);
+        }
+      }
+
+      while (row.length < TABLE_SIZE) {
+        row.push(0);
+      }
+
+      this.gameTable[i] = row;
+    }
     this.createCell();
   }
+
   moveRight() {
+    for (let i = 0; i < TABLE_SIZE; i++) {
+      const row = this.gameTable[i].filter((n) => n !== 0);
+
+      for (let k = row.length - 1; k > 0; k--) {
+        if (row[k] === row[k - 1]) {
+          row[k] *= 2;
+          this.addScore(row[k]);
+          row.splice(k - 1, 1);
+        }
+      }
+
+      while (row.length < TABLE_SIZE) {
+        row.unshift(0);
+      }
+
+      this.gameTable[i] = row;
+    }
     this.createCell();
   }
+
   moveUp() {
+    for (let i = 0; i < TABLE_SIZE; i++) {
+      const col = [];
+
+      for (let r = 0; r < TABLE_SIZE; r++) {
+        if (this.gameTable[r][i] !== 0) {
+          col.push(this.gameTable[r][i]);
+        }
+      }
+
+      for (let k = 0; k < col.length - 1; k++) {
+        if (col[k] === col[k + 1]) {
+          col[k] *= 2;
+          this.addScore(col[k]);
+          col.splice(k + 1, 1);
+        }
+      }
+
+      while (col.length < TABLE_SIZE) {
+        col.push(0);
+      }
+
+      for (let r = 0; r < TABLE_SIZE; r++) {
+        this.gameTable[r][i] = col[r];
+      }
+    }
+
     this.createCell();
   }
+
   moveDown() {
+    for (let i = 0; i < TABLE_SIZE; i++) {
+      const col = [];
+
+      for (let r = 0; r < TABLE_SIZE; r++) {
+        if (this.gameTable[r][i] !== 0) {
+          col.push(this.gameTable[r][i]);
+        }
+      }
+
+      for (let k = col.length - 1; k > 0; k--) {
+        if (col[k] === col[k - 1]) {
+          col[k] *= 2;
+          this.addScore(col[k]);
+          col.splice(k - 1, 1);
+        }
+      }
+
+      while (col.length < TABLE_SIZE) {
+        col.unshift(0);
+      }
+
+      for (let r = 0; r < TABLE_SIZE; r++) {
+        this.gameTable[r][i] = col[r];
+      }
+    }
+
     this.createCell();
   }
 
@@ -84,6 +184,15 @@ export default class Game {
 
   addScore(num) {
     this.score += num;
+  }
+
+  updateScore() {
+    const scoreElement = document.querySelector('.game-score');
+
+    if (!scoreElement) {
+      return;
+    }
+    scoreElement.textContent = this.score;
   }
 
   /**
@@ -103,12 +212,41 @@ export default class Game {
   start() {
     this.gameStatus = GAME_STATUS.playing;
 
-    const message = document.querySelector('.message-start');
+    const button = document.querySelector('.start');
 
-    message.classList.add('hidden') ;
+    button.textContent = 'Restart';
+    button.classList.add('restart');
+    button.classList.remove('start');
+
+    this.score = 0;
+
+    const messageStart = document.querySelector('.message-start');
+    const messageWin = document.querySelector('.message-win');
+    const messageLose = document.querySelector('.message-lose');
+
+    messageStart.classList.add('hidden');
+    messageWin.classList.add('hidden');
+    messageLose.classList.add('hidden');
+
+    this.updateScore();
   }
 
-  restart() {}
+  restart() {
+    this.gameTable = Array.from({ length: TABLE_SIZE }, () =>
+      Array(TABLE_SIZE).fill(0),
+    );
+    this.score = 0;
+    this.gameStatus = GAME_STATUS.playing;
+
+    const messageWin = document.querySelector('.message-win');
+    const messageLose = document.querySelector('.message-lose');
+
+    messageWin.classList.add('hidden');
+    messageLose.classList.add('hidden');
+
+    this.updateScore();
+    this.createCell();
+  }
 
   render() {
     const rows = document.querySelectorAll('.field-row');
