@@ -1,28 +1,30 @@
 'use strict';
 
-/**
- * This class represents the game.
- * Now it has a basic structure, that is needed for testing.
- * Feel free to add more props and methods if needed.
- */
+const GAME_STATUS = {
+  idle: 'idle',
+  playing: 'playing',
+  lose: 'lose',
+  win: 'win',
+};
+
 class Game {
+  gameStatus = GAME_STATUS.idle;
+  gameTable = [[]];
+
   /**
-   * Creates a new game instance.
-   *
    * @param {number[][]} initialState
-   * The initial state of the board.
    * @default
    * [[0, 0, 0, 0],
    *  [0, 0, 0, 0],
    *  [0, 0, 0, 0],
    *  [0, 0, 0, 0]]
-   *
-   * If passed, the board will be initialized with the provided
-   * initial state.
    */
   constructor(initialState) {
-    // eslint-disable-next-line no-console
-    console.log(initialState);
+    if (initialState) {
+      this.gameTable = initialState.map((row) => [...row]);
+    } else {
+      this.gameTable = Array.from({ length: 4 }, () => Array(4).fill(0));
+    }
   }
 
   moveLeft() {}
@@ -38,31 +40,39 @@ class Game {
   /**
    * @returns {number[][]}
    */
-  getState() {}
+  getState() {
+    return this.gameTable;
+  }
 
   /**
-   * Returns the current game status.
-   *
    * @returns {string} One of: 'idle', 'playing', 'win', 'lose'
-   *
-   * `idle` - the game has not started yet (the initial state);
-   * `playing` - the game is in progress;
-   * `win` - the game is won;
-   * `lose` - the game is lost
    */
-  getStatus() {}
+  getStatus() {
+    return this.gameStatus;
+  }
 
-  /**
-   * Starts the game.
-   */
-  start() {}
+  start() {
+    this.gameStatus = GAME_STATUS.playing;
+  }
 
-  /**
-   * Resets the game.
-   */
   restart() {}
 
-  // Add your own methods here
+  render() {
+    const rows = document.querySelectorAll('.field-row');
+    console.log(rows);
+
+    this.gameTable.forEach((rowGT, i) => {
+      const cells = rows[i].querySelectorAll('.field-cell');
+      console.log(cells);
+
+      rowGT.forEach((value, j) => {
+        if (value !== 0) {
+          cells[j].textContent = value;
+          cells[j].className += ` field-cell--${value}`;
+        }
+      });
+    });
+  }
 }
 
 module.exports = Game;
