@@ -3,7 +3,9 @@
 
 import Game, { GAME_STATUS } from '../modules/Game.class.js';
 
-const button = document.querySelector('.button');
+const button = document.querySelector('.game-control');
+const infoBtn = document.querySelector('.game-description');
+const arrows = document.querySelectorAll('.arrow');
 
 // const game = new Game();
 const game = new Game([
@@ -40,4 +42,37 @@ window.addEventListener('keydown', (event) => {
         break;
     }
   }
+});
+
+arrows.forEach((arrow) => {
+  arrow.addEventListener('click', () => {
+    if (game.gameStatus === GAME_STATUS.playing) {
+      switch (arrow.classList[0]) {
+        case 'up-arrow':
+          game.moveUp();
+          break;
+        case 'down-arrow':
+          game.moveDown();
+          break;
+        case 'left-arrow':
+          game.moveLeft();
+          break;
+        case 'right-arrow':
+          game.moveRight();
+          break;
+      }
+    }
+  });
+});
+
+infoBtn.addEventListener('click', () => {
+  const infoText = `
+    Use arrow keys or moving buttons to move the tiles.
+    When two tiles with the same number touch, they merge into one!
+    Reach 2048 to win!
+
+    Developer: Maksym Shevcuk
+  `;
+
+  alert(infoText);
 });

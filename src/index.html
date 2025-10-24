@@ -11,17 +11,25 @@
       rel="stylesheet"
       href="./styles/main.scss"
     />
+    <link
+      rel="icon"
+      type="image/png"
+      href="images/favicon.svg"
+    />
   </head>
   <body>
     <div class="container">
       <div class="game-header">
         <h1>2048</h1>
+        <div class="game-description">
+          ⓘ
+        </div>
         <div class="controls">
           <p class="info">
             Score:
             <span class="game-score">0</span>
           </p>
-          <button class="button start">Start</button>
+          <button class="button game-control start">Start</button>
         </div>
       </div>
 
@@ -63,6 +71,12 @@
         <p class="message message-start">
           Press "Start" to begin game. Good luck!
         </p>
+      </div>
+      <div class="control-panel">
+        <div class="up-arrow arrow">▲</div>
+        <div class="left-arrow arrow">◀</div>
+        <div class="down-arrow arrow">▼</div>
+        <div class="right-arrow arrow">▶</div>
       </div>
     </div>
     <script

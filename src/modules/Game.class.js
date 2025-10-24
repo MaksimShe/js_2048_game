@@ -55,7 +55,9 @@ export default class Game {
     }
 
     if (emptyCels.length === 0) {
-      this.gameLose();
+      if (this.isLose()) {
+        this.gameLose();
+      }
 
       return;
     }
@@ -171,7 +173,6 @@ export default class Game {
         this.gameTable[r][i] = col[r];
       }
     }
-
     this.createCell();
   }
 
@@ -211,23 +212,31 @@ export default class Game {
 
   start() {
     this.gameStatus = GAME_STATUS.playing;
+    this.score = 0;
 
-    const button = document.querySelector('.start');
+    const button = document.querySelector('.button');
 
     button.textContent = 'Restart';
     button.classList.add('restart');
     button.classList.remove('start');
 
-    this.score = 0;
-
     const messageStart = document.querySelector('.message-start');
     const messageWin = document.querySelector('.message-win');
     const messageLose = document.querySelector('.message-lose');
 
-    messageStart.classList.add('hidden');
-    messageWin.classList.add('hidden');
-    messageLose.classList.add('hidden');
+    if (messageStart) {
+      messageStart.classList.add('hidden');
+    }
 
+    if (messageWin) {
+      messageWin.classList.add('hidden');
+    }
+
+    if (messageLose) {
+      messageLose.classList.add('hidden');
+    }
+
+    this.createCell();
     this.updateScore();
   }
 
@@ -241,8 +250,13 @@ export default class Game {
     const messageWin = document.querySelector('.message-win');
     const messageLose = document.querySelector('.message-lose');
 
-    messageWin.classList.add('hidden');
-    messageLose.classList.add('hidden');
+    if (messageWin) {
+      messageWin.classList.add('hidden');
+    }
+
+    if (messageLose) {
+      messageLose.classList.add('hidden');
+    }
 
     this.updateScore();
     this.createCell();
@@ -264,6 +278,7 @@ export default class Game {
         }
       });
     });
+    this.addTransitionEffect();
   }
 
   gameLose() {
@@ -281,6 +296,46 @@ export default class Game {
 
     message.classList.remove('hidden');
   }
+
+  isLose() { // have any moves?
+    for (let i = 1; i < TABLE_SIZE - 1; i++) {
+      for (let j = 0; j < TABLE_SIZE; j++) {
+        if (
+          this.gameTable[i][j] === this.gameTable[i - 1][j] ||
+          this.gameTable[i][j] === this.gameTable[i + 1][j]
+        ) {
+          return false;
+        }
+      }
+    }
+
+    for (let i = 0; i < TABLE_SIZE; i++) {
+      for (let j = 1; j < TABLE_SIZE - 1; j++) {
+        if (
+          this.gameTable[i][j] === this.gameTable[i][j - 1] ||
+          this.gameTable[i][j] === this.gameTable[i][j + 1]
+        ) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  // hard part
+  addTransitionEffect() {
+    const rows = document.querySelectorAll('.field-row');
+
+    this.gameTable.forEach((rowGT, i) => {
+      const cells = rows[i].querySelectorAll('.field-cell');
+
+      rowGT.forEach((_, j) => {
+        cells[j].classList.add('transition-effect');
+      });
+    });
+  }
+
 }
 
 // module.exports = Game;
