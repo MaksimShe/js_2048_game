@@ -1,22 +1,37 @@
+/* eslint-disable no-shadow */
 'use strict';
 
-import Game from '../modules/Game.class.js';
-// Uncomment the next lines to use your game instance in the browser
-// const Game = require('../modules/Game.class');
-// const game = new Game();
-
-// Write your code here
+import Game, { GAME_STATUS } from '../modules/Game.class.js';
 
 const button = document.querySelector('.start');
+// const game = new Game();
+const game = new Game([
+  [2, 4, 4, 8],
+  [0, 16, 0, 64],
+  [64, 128, 0, 256],
+  [512, 0, 1024, 2048],
+]);
 
 button.addEventListener('click', () => {
-  const game = new Game([
-    [2, 4, 4, 8],
-    [8, 16, 32, 64],
-    [64, 128, 128, 256],
-    [512, 0, 1024, 2048],
-  ]);
-
   game.start();
   game.render();
+});
+
+window.addEventListener('keydown', (event) => {
+  if (game.gameStatus === GAME_STATUS.playing) {
+    switch (event.key) {
+      case 'ArrowUp':
+        game.moveUp();
+        break;
+      case 'ArrowDown':
+        game.moveDown();
+        break;
+      case 'ArrowLeft':
+        game.moveLeft();
+        break;
+      case 'ArrowRight':
+        game.moveRight();
+        break;
+    }
+  }
 });
