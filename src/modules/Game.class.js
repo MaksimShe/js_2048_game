@@ -29,6 +29,8 @@ export default class Game {
    */
   constructor(initialState) {
 
+    console.log('First render');
+
     let initialStateValid = true;
 
     if (initialState) {
