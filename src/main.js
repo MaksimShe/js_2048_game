@@ -48,8 +48,11 @@ window.addEventListener('keydown', (event) => {
 arrows.forEach((arrow) => {
   arrow.addEventListener('click', () => {
     console.log('Arrow clicked');
+    console.log(arrow.classList[0]);
 
     if (game.gameStatus === GAME_STATUS.playing) {
+      console.log('Game is playing + arrows');
+      
       switch (arrow.classList[0]) {
         case 'up-arrow':
           console.log('up', arrow);
