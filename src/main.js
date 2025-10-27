@@ -6,7 +6,7 @@ import Game, { GAME_STATUS } from './modules/Game.class.js';
 
 const button = document.querySelector('.game-control');
 const infoBtn = document.querySelector('.game-description');
-const arrows = document.querySelectorAll('.arrow');
+// const arrows = document.querySelectorAll('.arrow');
 
 // const game = new Game();
 const game = new Game([
@@ -45,26 +45,26 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-arrows.forEach((arrow) => {
-  arrow.addEventListener('click', (event) => {
-    if (game.gameStatus === GAME_STATUS.playing) {
-      switch (event.target.className) {
-        case 'up-arrow arrow':
-          game.moveUp();
-          break;
-        case 'down-arrow arrow':
-          game.moveDown();
-          break;
-        case 'left-arrow arrow':
-          game.moveLeft();
-          break;
-        case 'right-arrow arrow':
-          game.moveRight();
-          break;
-      }
-    }
-  });
-});
+// arrows.forEach((arrow) => {
+//   arrow.addEventListener('click', (event) => {
+//     if (game.gameStatus === GAME_STATUS.playing) {
+//       switch (event.target.className) {
+//         case 'up-arrow arrow':
+//           game.moveUp();
+//           break;
+//         case 'down-arrow arrow':
+//           game.moveDown();
+//           break;
+//         case 'left-arrow arrow':
+//           game.moveLeft();
+//           break;
+//         case 'right-arrow arrow':
+//           game.moveRight();
+//           break;
+//       }
+//     }
+//   });
+// });
 
 infoBtn.addEventListener('click', () => {
   const infoText = `
