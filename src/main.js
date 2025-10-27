@@ -46,29 +46,19 @@ window.addEventListener('keydown', (event) => {
 });
 
 arrows.forEach((arrow) => {
-  arrow.addEventListener('click', () => {
-    console.log('Arrow clicked');
-    console.log(arrow.classList[0]);
-
+  arrow.addEventListener('click', (event) => {
     if (game.gameStatus === GAME_STATUS.playing) {
-      console.log('Game is playing + arrows');
-      
-      switch (arrow.classList[0]) {
-        case 'up-arrow':
-          console.log('up', arrow);
-          console.log(arrow.classList[0]);
+      switch (event.target.className) {
+        case 'up-arrow arrow':
           game.moveUp();
           break;
-        case 'down-arrow':
-          console.log('down', arrow);
+        case 'down-arrow arrow':
           game.moveDown();
           break;
-        case 'left-arrow':
-          console.log('left', arrow);
+        case 'left-arrow arrow':
           game.moveLeft();
           break;
-        case 'right-arrow':
-          console.log('right', arrow);
+        case 'right-arrow arrow':
           game.moveRight();
           break;
       }
