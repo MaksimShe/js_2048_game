@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-console */
-/* eslint-disable function-paren-newline */
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-console */
 /* eslint-disable max-len */
 'use strict';
 
@@ -12,7 +10,7 @@ export const GAME_STATUS = {
   win: 'win',
 };
 
-const TABLE_SIZE= 4;
+const TABLE_SIZE = 4;
 
 export default class Game {
   gameStatus = GAME_STATUS.idle;
@@ -28,17 +26,15 @@ export default class Game {
    *  [0, 0, 0, 0]]
    */
   constructor(initialState) {
-
-    console.log('First render');
-
     let initialStateValid = true;
 
     if (initialState) {
-
       for (const row of initialState) {
-        row.map(num => {
+        row.map((num) => {
           if (this.isPowerOfTwo(num) === false) {
-            console.error('All numbers in initialState must be power of two or zero');
+            console.error(
+              'All numbers in initialState must be power of two or zero',
+            );
             initialStateValid = false;
           }
         });
@@ -86,11 +82,12 @@ export default class Game {
     const randomNum = Math.floor(Math.random() * emptyCels.length);
     const randomValue = Math.floor(Math.random() * 10);
 
-    if (randomValue === 9) {
+    if (randomValue === 9) {// created cells with num 4 (10% chance of this event);
       numberToAdd = 4;
     }
 
-    this.gameTable[emptyCels[randomNum].row][emptyCels[randomNum].cell] = numberToAdd;
+    this.gameTable[emptyCels[randomNum].row][emptyCels[randomNum].cell] =
+      numberToAdd;
     this.render();
   }
 
@@ -261,8 +258,7 @@ export default class Game {
 
   restart() {
     this.gameTable = Array.from({ length: TABLE_SIZE }, () =>
-      Array(TABLE_SIZE).fill(0),
-    );
+      Array(TABLE_SIZE).fill(0));
     this.score = 0;
     this.gameStatus = GAME_STATUS.playing;
 
@@ -316,7 +312,8 @@ export default class Game {
     message.classList.remove('hidden');
   }
 
-  isLose() { // have any moves?
+  isLose() {
+    // check ability to make not lose move
     for (let i = 1; i < TABLE_SIZE - 1; i++) {
       for (let j = 0; j < TABLE_SIZE; j++) {
         if (
@@ -342,7 +339,6 @@ export default class Game {
     return true;
   }
 
-  // hard part
   addTransitionEffect() {
     const rows = document.querySelectorAll('.field-row');
 
@@ -361,10 +357,6 @@ export default class Game {
 
   createEmptyTable() {
     this.gameTable = Array.from({ length: TABLE_SIZE }, () =>
-      Array(TABLE_SIZE).fill(0),
-    );
+      Array(TABLE_SIZE).fill(0));
   }
-
 }
-
-// module.exports = Game;
