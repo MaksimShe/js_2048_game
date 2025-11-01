@@ -75,6 +75,26 @@ body {
   }
 }
 
+.tile-fly {
+  box-sizing: border-box;
+  z-index: 1000;
+  will-change: transform;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.move-overlay {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  overflow: visible;
+}
+
 .game-field {
   background: #bbada0;
   border-spacing: 10px;
@@ -238,20 +258,3 @@ h1 {
 .arrow:active {
   background: #89d890;
 }
-
-.up-arrow {
-  grid-area: up;
-}
-
-.left-arrow {
-  grid-area: left;
-}
-
-.down-arrow {
-  grid-area: down;
-}
-
-.right-arrow {
-  grid-area: right;
-}
-

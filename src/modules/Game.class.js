@@ -11,11 +11,17 @@ export const GAME_STATUS = {
 };
 
 const TABLE_SIZE = 4;
+const ANIM_DURATION = 120;
 
 export default class Game {
   gameStatus = GAME_STATUS.idle;
   gameTable = [[]];
   score = 0;
+  prevTable = null;
+
+  savePrevState() {
+    this.prevTable = this.gameTable.map((row) => [...row]);
+  }
 
   /**
    * @param {number[][]} initialState
@@ -48,6 +54,246 @@ export default class Game {
     } else {
       this.createEmptyTable();
     }
+  }
+
+  async animateMove(direction) {
+    if (!this.prevTable) {
+      return;
+    }
+
+    const field = document.querySelector('.game-field');
+
+    if (!field) {
+      this.prevTable = null;
+
+      return;
+    }
+
+    const rows = field.querySelectorAll('.field-row');
+
+    if (rows.length === 0) {
+      this.prevTable = null;
+
+      return;
+    }
+
+    // helper to map row moves (left/right)
+    const mapRowMoves = (oldRow, newRow, rowIdx, dir) => {
+      const sources = [];
+      const targets = [];
+
+      const forward = dir === 'left';
+
+      for (let c = 0; c < oldRow.length; c++) {
+        if (oldRow[c] !== 0) {
+          sources.push({ col: c, v: oldRow[c] });
+        }
+      }
+
+      for (let c = 0; c < newRow.length; c++) {
+        if (newRow[c] !== 0) {
+          targets.push({ col: c, v: newRow[c] });
+        }
+      }
+
+      // if direction is right, match from right/left
+      const sList = forward ? sources : sources.slice().reverse();
+      const tList = forward ? targets : targets.slice().reverse();
+
+      const moves = [];
+
+      for (let k = 0; k < sList.length; k++) {
+        const src = sList[k];
+        const tgt = tList[Math.min(k, tList.length - 1)];
+
+        if (tgt) {
+          moves.push({
+            fromRow: rowIdx,
+            fromCol: src.col,
+            toRow: rowIdx,
+            toCol: tgt.col,
+          });
+        }
+      }
+
+      return moves;
+    };
+
+    // map moves up/down
+    const mapColMoves = (oldCol, newCol, colIdx, dir) => {
+      const sources = [];
+      const targets = [];
+
+      for (let r = 0; r < oldCol.length; r++) {
+        if (oldCol[r] !== 0) {
+          sources.push({ row: r, v: oldCol[r] });
+        }
+      }
+
+      for (let r = 0; r < newCol.length; r++) {
+        if (newCol[r] !== 0) {
+          targets.push({ row: r, v: newCol[r] });
+        }
+      }
+
+      const forward = dir === 'up';
+      const sList = forward ? sources : sources.slice().reverse();
+      const tList = forward ? targets : targets.slice().reverse();
+
+      const moves = [];
+
+      for (let k = 0; k < sList.length; k++) {
+        const src = sList[k];
+        const tgt = tList[Math.min(k, tList.length - 1)];
+
+        if (tgt) {
+          moves.push({
+            fromRow: src.row,
+            fromCol: colIdx,
+            toRow: tgt.row,
+            toCol: colIdx,
+          });
+        }
+      }
+
+      return moves;
+    };
+
+    // build moves list from prevTable ti gameTable
+    const moves = [];
+
+    if (direction === 'left' || direction === 'right') {
+      for (let r = 0; r < TABLE_SIZE; r++) {
+        moves.push(...mapRowMoves(this.prevTable[r], this.gameTable[r], r, direction));
+      }
+    } else {
+      // up / down
+      for (let c = 0; c < TABLE_SIZE; c++) {
+        const oldCol = [];
+        const newCol = [];
+
+        for (let r = 0; r < TABLE_SIZE; r++) {
+          oldCol.push(this.prevTable[r][c] ?? 0);
+          newCol.push(this.gameTable[r][c] ?? 0);
+        }
+        moves.push(...mapColMoves(oldCol, newCol, c, direction));
+      }
+    }
+
+    if (moves.length === 0) {
+      this.render();
+      this.prevTable = null;
+
+      return;
+    }
+
+    // ensure field is posiioned for absolute overlay
+    const prevFieldPosition = field.style.position;
+
+    if (getComputedStyle(field).position === 'static') {
+      field.style.position = 'relative';
+    }
+
+    const fieldRect = field.getBoundingClientRect();
+
+
+    // create overlay container
+    const overlay = document.createElement('div');
+
+    overlay.className = 'move-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.left = `${fieldRect.left}px`;
+    overlay.style.top = `${fieldRect.top}px`;
+    overlay.style.width = `${fieldRect.width}px`;
+    overlay.style.height = `${fieldRect.height}px`;
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '1000';
+    document.body.append(overlay);
+
+
+    // create clones from current dom
+    const clones = moves.map((m) => {
+      const rowEl = rows[m.fromRow];
+
+      if (!rowEl) {
+        return null;
+      }
+
+      const cellEls = rowEl.querySelectorAll('.field-cell');
+      const sourceEl = cellEls[m.fromCol];
+
+      if (!sourceEl) {
+        return null;
+      }
+
+      const srcRect = sourceEl.getBoundingClientRect();
+      const clone = sourceEl.cloneNode(true);
+
+      clone.classList.add('tile-fly');
+      clone.style.position = 'absolute';
+      clone.style.left = `${srcRect.left - fieldRect.left}px`;
+      clone.style.top = `${srcRect.top - fieldRect.top}px`;
+      clone.style.width = `${srcRect.width}px`;
+      clone.style.height = `${srcRect.height}px`;
+      clone.style.margin = '0';
+      clone.style.transform = 'translate(0, 0)';
+      clone.style.transition = `transform ${ANIM_DURATION}ms ease`;
+      overlay.appendChild(clone);
+
+      return {
+        el: clone,
+        fromRect: srcRect,
+        move: m,
+      };
+    }).filter(Boolean);
+
+    // now update dom to final state
+    this.render();
+
+    // trigger animation next frame
+    await new Promise((resolve) => {
+      // allow browser to paint render() first
+      requestAnimationFrame(() => {
+        // compute target rects and animate clones
+        clones.forEach((c) => {
+          const targetRowEl = field.querySelectorAll('.field-row')[c.move.toRow];
+
+          if (!targetRowEl) {
+            return;
+          }
+
+          const targetCellEls = targetRowEl.querySelectorAll('.field-cell');
+          const targetEl = targetCellEls[c.move.toCol];
+
+          if (!targetEl) {
+            return;
+          }
+
+          const tgtRect = targetEl.getBoundingClientRect();
+
+          const dx = tgtRect.left - c.fromRect.left;
+          const dy = tgtRect.top - c.fromRect.top;
+
+          c.el.style.transform = `translate(${dx}px, ${dy}px)`;
+        });
+
+        // wait animation duration
+        setTimeout(() => {
+          // clean up
+          overlay.remove();
+          // restore original position style if we changed it
+
+          if (prevFieldPosition === '') {
+            field.style.position = '';
+          } else {
+            field.style.position = prevFieldPosition;
+          }
+          resolve();
+        }, ANIM_DURATION + 20);
+      });
+    });
+
+    this.prevTable = null;
   }
 
   createCell() {
@@ -91,7 +337,9 @@ export default class Game {
     this.render();
   }
 
-  moveLeft() {
+  async moveLeft() {
+    this.savePrevState();
+
     for (let i = 0; i < TABLE_SIZE; i++) {
       const row = this.gameTable[i].filter((n) => n !== 0);
 
@@ -109,10 +357,13 @@ export default class Game {
 
       this.gameTable[i] = row;
     }
+    await this.animateMove('left');
     this.createCell();
   }
 
-  moveRight() {
+  async moveRight() {
+    this.savePrevState();
+
     for (let i = 0; i < TABLE_SIZE; i++) {
       const row = this.gameTable[i].filter((n) => n !== 0);
 
@@ -130,10 +381,13 @@ export default class Game {
 
       this.gameTable[i] = row;
     }
+    await this.animateMove('right');
     this.createCell();
   }
 
-  moveUp() {
+  async moveUp() {
+    this.savePrevState();
+
     for (let i = 0; i < TABLE_SIZE; i++) {
       const col = [];
 
@@ -159,11 +413,13 @@ export default class Game {
         this.gameTable[r][i] = col[r];
       }
     }
-
+    await this.animateMove('up');
     this.createCell();
   }
 
-  moveDown() {
+  async moveDown() {
+    this.savePrevState();
+
     for (let i = 0; i < TABLE_SIZE; i++) {
       const col = [];
 
@@ -189,6 +445,7 @@ export default class Game {
         this.gameTable[r][i] = col[r];
       }
     }
+    await this.animateMove('down');
     this.createCell();
   }
 
